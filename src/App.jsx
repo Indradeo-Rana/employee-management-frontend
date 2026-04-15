@@ -17,6 +17,8 @@ import PaymentPage    from "./pages/admin/PaymentPage";
 import ToolsPage      from "./pages/admin/ToolsPage";
 import ReportsPage    from "./pages/admin/ReportsPage";
 import NotesPage      from "./pages/admin/NotesPage";
+import AdminProfile   from "./pages/admin/AdminProfile";
+
 
 // Employee pages
 import EmployeeLayout     from "./pages/employee/EmployeeLayout";
@@ -25,6 +27,8 @@ import EmployeeAttendance from "./pages/employee/EmployeeAttendance";
 import EmployeePayroll    from "./pages/employee/EmployeePayroll";
 import EmployeeMachines   from "./pages/employee/EmployeeMachines";
 import EmployeeSite       from "./pages/employee/EmployeeSite";
+import EmployeeProfile    from "./pages/employee/EmployeeProfile";
+
 
 // ── Root redirect ─────────────────────────────────────────────────────────────
 const RootRedirect = () => {
@@ -52,6 +56,7 @@ const AppRoutes = () => (
         <Route path="/admin/tools"      element={<ToolsPage />} />
         <Route path="/admin/reports"    element={<ReportsPage />} />
         <Route path="/admin/notes"      element={<NotesPage />} />
+        <Route path="/admin/profile"    element={<AdminProfile />} />
       </Route>
     </Route>
 
@@ -63,6 +68,9 @@ const AppRoutes = () => (
         <Route path="/employee/payroll"    element={<EmployeePayroll />} />
         <Route path="/employee/machines"   element={<EmployeeMachines />} />
         <Route path="/employee/site"       element={<EmployeeSite />} />
+        <Route path="/employee/profile"    element={<EmployeeProfile />} />
+
+
       </Route>
     </Route>
 
