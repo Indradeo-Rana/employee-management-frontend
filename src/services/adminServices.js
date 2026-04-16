@@ -12,30 +12,39 @@ export const searchService = {
 
 // ── Profile (Admin/Super Admin) ───────────────────────────────────────────────
 export const profileService = {
-  getAdminProfile:    ()       => axiosInstance.get("/api/profile/admin").then(r => r.data.data),
-  updateAdminProfile: (data)   => axiosInstance.put("/api/profile/admin", data).then(r => r.data.data),
-  changePassword:     (data)   => axiosInstance.put("/api/profile/change-password", data).then(r => r.data),
+  getAdminProfile:    ()     => axiosInstance.get("/api/profile/admin").then(r => r.data.data),
+  updateAdminProfile: (data) => axiosInstance.put("/api/profile/admin", data).then(r => r.data.data),
+  changePassword:     (data) => axiosInstance.put("/api/profile/change-password", data).then(r => r.data),
+};
+
+// ── Admin User Management ─────────────────────────────────────────────────────
+export const adminUserService = {
+  // Admin reset password for employee/admin
+  resetUserPassword: (userId, newPassword, confirmPassword) =>
+    axiosInstance.post(`/api/admin/users/${userId}/reset-password`, {
+      newPassword, confirmPassword,
+    }).then(r => r.data),
 };
 
 // ── Employees ─────────────────────────────────────────────────────────────────
 export const employeeService = {
-  getAll:    ()       => axiosInstance.get("/api/admin/employees").then(r => r.data.data),
-  getById:   (id)     => axiosInstance.get(`/api/admin/employees/${id}`).then(r => r.data.data),
-  getDetails:(id)     => axiosInstance.get(`/api/admin/employees/${id}/details`).then(r => r.data.data),
-  search:    (q)      => axiosInstance.get(`/api/admin/employees/search?q=${q}`).then(r => r.data.data),
-  create:    (data)   => axiosInstance.post("/api/admin/employees", data).then(r => r.data.data),
-  update:    (id, d)  => axiosInstance.put(`/api/admin/employees/${id}`, d).then(r => r.data.data),
-  delete:    (id)     => axiosInstance.delete(`/api/admin/employees/${id}`).then(r => r.data),
+  getAll:    ()      => axiosInstance.get("/api/admin/employees").then(r => r.data.data),
+  getById:   (id)    => axiosInstance.get(`/api/admin/employees/${id}`).then(r => r.data.data),
+  getDetails:(id)    => axiosInstance.get(`/api/admin/employees/${id}/details`).then(r => r.data.data),
+  search:    (q)     => axiosInstance.get(`/api/admin/employees/search?q=${q}`).then(r => r.data.data),
+  create:    (data)  => axiosInstance.post("/api/admin/employees", data).then(r => r.data.data),
+  update:    (id, d) => axiosInstance.put(`/api/admin/employees/${id}`, d).then(r => r.data.data),
+  delete:    (id)    => axiosInstance.delete(`/api/admin/employees/${id}`).then(r => r.data),
 };
 
 // ── Attendance ────────────────────────────────────────────────────────────────
 export const attendanceService = {
-  getRegister:  (year, month)       => axiosInstance.get(`/api/admin/attendance/register?year=${year}&month=${month}`).then(r => r.data.data),
-  saveCell:     (data)              => axiosInstance.post("/api/admin/attendance/cell", data).then(r => r.data),
-  bulkMark:     (data)              => axiosInstance.post("/api/admin/attendance/bulk", data).then(r => r.data.data),
-  getByDate:    (date)              => axiosInstance.get(`/api/admin/attendance/date?date=${date}`).then(r => r.data.data),
-  getByRange:   (from, to)          => axiosInstance.get(`/api/admin/attendance/range?from=${from}&to=${to}`).then(r => r.data.data),
-  getByEmployee:(id, from, to)      => axiosInstance.get(`/api/admin/attendance/employee/${id}?from=${from}&to=${to}`).then(r => r.data.data),
+  getRegister:  (year, month)  => axiosInstance.get(`/api/admin/attendance/register?year=${year}&month=${month}`).then(r => r.data.data),
+  saveCell:     (data)         => axiosInstance.post("/api/admin/attendance/cell", data).then(r => r.data),
+  bulkMark:     (data)         => axiosInstance.post("/api/admin/attendance/bulk", data).then(r => r.data.data),
+  getByDate:    (date)         => axiosInstance.get(`/api/admin/attendance/date?date=${date}`).then(r => r.data.data),
+  getByRange:   (from, to)     => axiosInstance.get(`/api/admin/attendance/range?from=${from}&to=${to}`).then(r => r.data.data),
+  getByEmployee:(id, from, to) => axiosInstance.get(`/api/admin/attendance/employee/${id}?from=${from}&to=${to}`).then(r => r.data.data),
 };
 
 // ── Payments ──────────────────────────────────────────────────────────────────
@@ -61,16 +70,16 @@ export const toolService = {
 
 // ── Notes ─────────────────────────────────────────────────────────────────────
 export const noteService = {
-  getAll:  ()       => axiosInstance.get("/api/admin/notes").then(r => r.data.data),
-  create:  (data)   => axiosInstance.post("/api/admin/notes", data).then(r => r.data.data),
-  update:  (id, d)  => axiosInstance.put(`/api/admin/notes/${id}`, d).then(r => r.data.data),
-  delete:  (id)     => axiosInstance.delete(`/api/admin/notes/${id}`).then(r => r.data),
+  getAll:  ()      => axiosInstance.get("/api/admin/notes").then(r => r.data.data),
+  create:  (data)  => axiosInstance.post("/api/admin/notes", data).then(r => r.data.data),
+  update:  (id, d) => axiosInstance.put(`/api/admin/notes/${id}`, d).then(r => r.data.data),
+  delete:  (id)    => axiosInstance.delete(`/api/admin/notes/${id}`).then(r => r.data),
 };
 
 // ── Sites ─────────────────────────────────────────────────────────────────────
 export const siteService = {
-  getAll:  ()       => axiosInstance.get("/api/admin/sites").then(r => r.data.data),
-  create:  (data)   => axiosInstance.post("/api/admin/sites", data).then(r => r.data.data),
-  update:  (id, d)  => axiosInstance.put(`/api/admin/sites/${id}`, d).then(r => r.data.data),
-  delete:  (id)     => axiosInstance.delete(`/api/admin/sites/${id}`).then(r => r.data),
+  getAll:  ()      => axiosInstance.get("/api/admin/sites").then(r => r.data.data),
+  create:  (data)  => axiosInstance.post("/api/admin/sites", data).then(r => r.data.data),
+  update:  (id, d) => axiosInstance.put(`/api/admin/sites/${id}`, d).then(r => r.data.data),
+  delete:  (id)    => axiosInstance.delete(`/api/admin/sites/${id}`).then(r => r.data),
 };

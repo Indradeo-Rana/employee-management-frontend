@@ -11,11 +11,13 @@ const LoginModal = ({ role, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const isAdmin = role === "admin";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (!email || !password) {
       showError("Please fill in all fields.");
@@ -34,8 +36,14 @@ const LoginModal = ({ role, onClose }) => {
         }
       }, 1500);
     } catch (err) {
+      setError(err.message);
       showError(err.message);
     }
+  };
+
+  const handleForgotPassword = () => {
+    onClose();
+    navigate("/forgot-password");
   };
 
   return (
@@ -129,6 +137,16 @@ const LoginModal = ({ role, onClose }) => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
+              {/* ── Forgot Password Link ── */}
+              <div style={{ textAlign: "right", marginBottom: "0.75rem" }}>
+                <button type="button" onClick={handleForgotPassword}
+                  style={{ background: "none", border: "none", color: "#818cf8", fontSize: "12px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                  Forgot Password?
+                </button>
+              </div>
+
+              {error && <p style={styles.errorText}>{error}</p>}
 
               <div style={styles.dividerRow}>
                 <div style={styles.dividerLine} />

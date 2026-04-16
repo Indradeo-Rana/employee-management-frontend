@@ -8,6 +8,8 @@ import AdminLayout from "./components/common/AdminLayout";
 // Auth pages
 import LandingPage  from "./pages/LandingPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage  from "./pages/ForgotPasswordPage";
+
 
 // Admin pages
 import DashboardHome  from "./pages/admin/DashboardHome";
@@ -45,6 +47,8 @@ const AppRoutes = () => (
     {/* ── Public ── */}
     <Route path="/"         element={<RootRedirect />} />
     <Route path="/register" element={<RegisterPage />} />
+    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
 
     {/* ── Admin Routes (Sidebar + Header layout) ── */}
     <Route element={<PrivateRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]} />}>
