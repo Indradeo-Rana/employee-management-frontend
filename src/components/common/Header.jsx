@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import authService from "../../services/authService";
@@ -82,7 +82,7 @@ const StatBox = ({ label, value, color }) => (
 );
 
 // ── Header Component ──────────────────────────────────────────────────────────
-const Header = ({ collapsed }) => {
+const Header = ({ collapsed, isMobile = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -187,140 +187,262 @@ const Header = ({ collapsed }) => {
   const formatDate = (d) => d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   const formatTime = (d) => d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-  const sidebarWidth = collapsed ? 68 : 220;
+  const sidebarWidth = isMobile ? 68 : (collapsed ? 68 : 220);
+
+  const headerStyle = {
+    ...styles.header,
+    left: sidebarWidth,
+    right: 0,
+    height: isMobile ? "auto" : "64px",
+    minHeight: "64px",
+    padding: isMobile ? "0.9rem 1rem" : "0 1.5rem",
+    gap: isMobile ? "0.75rem" : "1rem",
+    flexWrap: isMobile ? "wrap" : "nowrap",
+  };
 
   return (
     <>
-      <header style={{ ...styles.header, left: sidebarWidth }}>
+      <header style={headerStyle}>
 
-        {/* ── Admin Name + DateTime ── */}
-        <div style={{ flexShrink: 0 }}>
-          <p style={{ color: "#fff", fontWeight: 600, fontSize: "14px", lineHeight: 1.2 }}>{user?.name || "Admin"}</p>
-          <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>{formatDate(time)} | {formatTime(time)}</p>
-        </div>
+        {isMobile ? (
+          <>
+            <div style={styles.mobileTopRow}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ color: "#fff", fontWeight: 600, fontSize: "14px", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name || "Admin"}</p>
+                <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>{formatDate(time)} | {formatTime(time)}</p>
+              </div>
 
-        <div style={{ flex: 1 }} />
+              <div style={styles.mobileActionRow}>
+                <button onClick={() => { setShowInvite(!showInvite); setShowProfile(false); }} style={styles.inviteBtn}>
+                  + Invite
+                </button>
 
-        {/* ── Global Search ── */}
-        <div ref={searchRef} style={{ position: "relative" }}>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "13px", color: "rgba(232,234,240,0.3)" }}>🔍</span>
-            <input
-              value={searchVal}
-              onChange={handleSearchChange}
-              onFocus={() => searchResults && setShowDropdown(true)}
-              placeholder="Search employees, machines, notes..."
-              style={styles.searchInput}
-            />
-            {searchLoading && (
-              <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "11px", color: "rgba(232,234,240,0.3)" }}>...</span>
-            )}
-          </div>
-
-          {/* ── Search Dropdown ── */}
-          {showDropdown && (
-            <div style={styles.dropdown}>
-              {!hasResults ? (
-                <p style={{ color: "rgba(232,234,240,0.35)", fontSize: "12px", padding: "0.75rem 1rem" }}>No results found</p>
-              ) : (
-                <>
-                  {/* Employees */}
-                  {searchResults.employees?.length > 0 && (
-                    <div>
-                      <p style={styles.dropdownSection}>👥 Employees</p>
-                      {searchResults.employees.map(emp => (
-                        <button key={emp.id} onClick={() => handleEmpClick(emp.id)} style={styles.dropdownItem}>
-                          <div>
-                            <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{emp.name}</p>
-                            <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>
-                              {emp.designation || "Employee"}{emp.siteName ? ` • ${emp.siteName}` : ""}
-                            </p>
-                          </div>
-                          <span style={styles.viewTag}>View Details</span>
-                        </button>
-                      ))}
+                <div ref={profileRef} style={{ position: "relative" }}>
+                  <button onClick={() => { setShowProfile(!showProfile); setShowInvite(false); }} style={styles.avatar}>
+                    {user?.name?.charAt(0)?.toUpperCase() || "A"}
+                  </button>
+                  {showProfile && (
+                    <div style={{ ...styles.floatCard, right: 0, width: "min(220px, calc(100vw - 2rem))" }}>
+                      <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: "0.5px solid rgba(255,255,255,0.07)" }}>
+                        <p style={{ color: "#fff", fontWeight: 600, fontSize: "13px" }}>{user?.name}</p>
+                        <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>{user?.email}</p>
+                        <span style={styles.roleBadge}>{user?.role}</span>
+                      </div>
+                      <button onClick={() => { navigate("/admin/profile"); setShowProfile(false); }} style={styles.dropBtn}>👤 View / Edit Profile</button>
+                      <button onClick={handleLogout} style={{ ...styles.dropBtn, color: "rgba(239,68,68,0.8)", marginTop: "4px" }}>← Logout</button>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
 
-                  {/* Machines */}
-                  {searchResults.machines?.length > 0 && (
-                    <div>
-                      <p style={styles.dropdownSection}>🔧 Machines</p>
-                      {searchResults.machines.map(m => (
-                        <button key={m.id} onClick={handleMachineClick} style={styles.dropdownItem}>
-                          <div>
-                            <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{m.name}</p>
-                            <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>
-                              {m.toolCode ? `${m.toolCode} • ` : ""}{m.assignedToName ? `Assigned: ${m.assignedToName}` : m.status}
-                            </p>
-                          </div>
-                          <span style={{ ...styles.viewTag, color: "#34d399", borderColor: "rgba(52,211,153,0.3)" }}>View</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+            <div ref={searchRef} style={{ position: "relative", width: "100%" }}>
+              <div style={{ position: "relative", width: "100%" }}>
+                <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "13px", color: "rgba(232,234,240,0.3)" }}>🔍</span>
+                <input
+                  value={searchVal}
+                  onChange={handleSearchChange}
+                  onFocus={() => searchResults && setShowDropdown(true)}
+                  placeholder="Search employees, machines, notes..."
+                  style={{ ...styles.searchInput, width: "100%", minWidth: 0, boxSizing: "border-box" }}
+                />
+                {searchLoading && (
+                  <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "11px", color: "rgba(232,234,240,0.3)" }}>...</span>
+                )}
+              </div>
 
-                  {/* Notes */}
-                  {searchResults.notes?.length > 0 && (
-                    <div>
-                      <p style={styles.dropdownSection}>📝 Notes</p>
-                      {searchResults.notes.map(n => (
-                        <button key={n.id} onClick={handleNoteClick} style={styles.dropdownItem}>
-                          <div>
-                            <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{n.title}</p>
-                            {n.siteName && <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>📍 {n.siteName}</p>}
-                          </div>
-                          <span style={{ ...styles.viewTag, color: "#fbbf24", borderColor: "rgba(251,191,36,0.3)" }}>View</span>
-                        </button>
-                      ))}
-                    </div>
+              {showDropdown && (
+                <div style={{ ...styles.dropdown, width: "100%", minWidth: 0 }}>
+                  {!hasResults ? (
+                    <p style={{ color: "rgba(232,234,240,0.35)", fontSize: "12px", padding: "0.75rem 1rem" }}>No results found</p>
+                  ) : (
+                    <>
+                      {searchResults.employees?.length > 0 && (
+                        <div>
+                          <p style={styles.dropdownSection}>👥 Employees</p>
+                          {searchResults.employees.map(emp => (
+                            <button key={emp.id} onClick={() => handleEmpClick(emp.id)} style={{ ...styles.dropdownItem, alignItems: "flex-start", gap: "0.75rem" }}>
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{emp.name}</p>
+                                <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>
+                                  {emp.designation || "Employee"}{emp.siteName ? ` • ${emp.siteName}` : ""}
+                                </p>
+                              </div>
+                              <span style={styles.viewTag}>View Details</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {searchResults.machines?.length > 0 && (
+                        <div>
+                          <p style={styles.dropdownSection}>🔧 Machines</p>
+                          {searchResults.machines.map(m => (
+                            <button key={m.id} onClick={handleMachineClick} style={{ ...styles.dropdownItem, alignItems: "flex-start", gap: "0.75rem" }}>
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{m.name}</p>
+                                <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>
+                                  {m.toolCode ? `${m.toolCode} • ` : ""}{m.assignedToName ? `Assigned: ${m.assignedToName}` : m.status}
+                                </p>
+                              </div>
+                              <span style={{ ...styles.viewTag, color: "#34d399", borderColor: "rgba(52,211,153,0.3)" }}>View</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {searchResults.notes?.length > 0 && (
+                        <div>
+                          <p style={styles.dropdownSection}>📝 Notes</p>
+                          {searchResults.notes.map(n => (
+                            <button key={n.id} onClick={handleNoteClick} style={{ ...styles.dropdownItem, alignItems: "flex-start", gap: "0.75rem" }}>
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{n.title}</p>
+                                {n.siteName && <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>📍 {n.siteName}</p>}
+                              </div>
+                              <span style={{ ...styles.viewTag, color: "#fbbf24", borderColor: "rgba(251,191,36,0.3)" }}>View</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
-                </>
+                </div>
               )}
             </div>
-          )}
-        </div>
-
-        {/* ── Invite Button ── */}
-        <div style={{ position: "relative" }}>
-          <button onClick={() => { setShowInvite(!showInvite); setShowProfile(false); }} style={styles.inviteBtn}>
-            + Invite
-          </button>
-          {showInvite && (
-            <div style={styles.floatCard}>
-              <p style={styles.floatTitle}>Send Invite</p>
-              <input type="email" placeholder="Email address" value={inviteEmail}
-                onChange={e => setInviteEmail(e.target.value)} style={styles.floatInput} />
-              <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
-                style={{ ...styles.floatInput, marginTop: "8px" }}>
-                <option value="EMPLOYEE">Employee</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-              {inviteMsg && <p style={{ fontSize: "12px", color: inviteMsg.startsWith("✅") ? "#34d399" : "#f87171", marginTop: "6px" }}>{inviteMsg}</p>}
-              <button onClick={handleSendInvite} disabled={inviteLoading} style={styles.floatBtn}>
-                {inviteLoading ? "Sending..." : "Send Invite"}
-              </button>
+          </>
+        ) : (
+          <>
+            {/* ── Admin Name + DateTime ── */}
+            <div style={{ flexShrink: 0 }}>
+              <p style={{ color: "#fff", fontWeight: 600, fontSize: "14px", lineHeight: 1.2 }}>{user?.name || "Admin"}</p>
+              <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>{formatDate(time)} | {formatTime(time)}</p>
             </div>
-          )}
-        </div>
 
-        {/* ── Profile ── */}
-        <div ref={profileRef} style={{ position: "relative" }}>
-          <button onClick={() => { setShowProfile(!showProfile); setShowInvite(false); }} style={styles.avatar}>
-            {user?.name?.charAt(0)?.toUpperCase() || "A"}
-          </button>
-          {showProfile && (
-            <div style={styles.floatCard}>
-              <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: "0.5px solid rgba(255,255,255,0.07)" }}>
-                <p style={{ color: "#fff", fontWeight: 600, fontSize: "13px" }}>{user?.name}</p>
-                <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>{user?.email}</p>
-                <span style={styles.roleBadge}>{user?.role}</span>
+            <div style={{ flex: 1 }} />
+
+            {/* ── Global Search ── */}
+            <div ref={searchRef} style={{ position: "relative" }}>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "13px", color: "rgba(232,234,240,0.3)" }}>🔍</span>
+                <input
+                  value={searchVal}
+                  onChange={handleSearchChange}
+                  onFocus={() => searchResults && setShowDropdown(true)}
+                  placeholder="Search employees, machines, notes..."
+                  style={styles.searchInput}
+                />
+                {searchLoading && (
+                  <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "11px", color: "rgba(232,234,240,0.3)" }}>...</span>
+                )}
               </div>
-              <button onClick={() => { navigate("/admin/profile"); setShowProfile(false); }} style={styles.dropBtn}>👤 View / Edit Profile</button>
-              <button onClick={handleLogout} style={{ ...styles.dropBtn, color: "rgba(239,68,68,0.8)", marginTop: "4px" }}>← Logout</button>
+
+              {/* ── Search Dropdown ── */}
+              {showDropdown && (
+                <div style={styles.dropdown}>
+                  {!hasResults ? (
+                    <p style={{ color: "rgba(232,234,240,0.35)", fontSize: "12px", padding: "0.75rem 1rem" }}>No results found</p>
+                  ) : (
+                    <>
+                      {/* Employees */}
+                      {searchResults.employees?.length > 0 && (
+                        <div>
+                          <p style={styles.dropdownSection}>👥 Employees</p>
+                          {searchResults.employees.map(emp => (
+                            <button key={emp.id} onClick={() => handleEmpClick(emp.id)} style={styles.dropdownItem}>
+                              <div>
+                                <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{emp.name}</p>
+                                <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>
+                                  {emp.designation || "Employee"}{emp.siteName ? ` • ${emp.siteName}` : ""}
+                                </p>
+                              </div>
+                              <span style={styles.viewTag}>View Details</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Machines */}
+                      {searchResults.machines?.length > 0 && (
+                        <div>
+                          <p style={styles.dropdownSection}>🔧 Machines</p>
+                          {searchResults.machines.map(m => (
+                            <button key={m.id} onClick={handleMachineClick} style={styles.dropdownItem}>
+                              <div>
+                                <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{m.name}</p>
+                                <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>
+                                  {m.toolCode ? `${m.toolCode} • ` : ""}{m.assignedToName ? `Assigned: ${m.assignedToName}` : m.status}
+                                </p>
+                              </div>
+                              <span style={{ ...styles.viewTag, color: "#34d399", borderColor: "rgba(52,211,153,0.3)" }}>View</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      {searchResults.notes?.length > 0 && (
+                        <div>
+                          <p style={styles.dropdownSection}>📝 Notes</p>
+                          {searchResults.notes.map(n => (
+                            <button key={n.id} onClick={handleNoteClick} style={styles.dropdownItem}>
+                              <div>
+                                <p style={{ color: "#e8eaf0", fontSize: "13px", fontWeight: 500 }}>{n.title}</p>
+                                {n.siteName && <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>📍 {n.siteName}</p>}
+                              </div>
+                              <span style={{ ...styles.viewTag, color: "#fbbf24", borderColor: "rgba(251,191,36,0.3)" }}>View</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* ── Invite Button ── */}
+            <div style={{ position: "relative" }}>
+              <button onClick={() => { setShowInvite(!showInvite); setShowProfile(false); }} style={styles.inviteBtn}>
+                + Invite
+              </button>
+              {showInvite && (
+                <div style={styles.floatCard}>
+                  <p style={styles.floatTitle}>Send Invite</p>
+                  <input type="email" placeholder="Email address" value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)} style={styles.floatInput} />
+                  <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
+                    style={{ ...styles.floatInput, marginTop: "8px" }}>
+                    <option value="EMPLOYEE">Employee</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                  {inviteMsg && <p style={{ fontSize: "12px", color: inviteMsg.startsWith("✅") ? "#34d399" : "#f87171", marginTop: "6px" }}>{inviteMsg}</p>}
+                  <button onClick={handleSendInvite} disabled={inviteLoading} style={styles.floatBtn}>
+                    {inviteLoading ? "Sending..." : "Send Invite"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* ── Profile ── */}
+            <div ref={profileRef} style={{ position: "relative" }}>
+              <button onClick={() => { setShowProfile(!showProfile); setShowInvite(false); }} style={styles.avatar}>
+                {user?.name?.charAt(0)?.toUpperCase() || "A"}
+              </button>
+              {showProfile && (
+                <div style={styles.floatCard}>
+                  <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: "0.5px solid rgba(255,255,255,0.07)" }}>
+                    <p style={{ color: "#fff", fontWeight: 600, fontSize: "13px" }}>{user?.name}</p>
+                    <p style={{ color: "rgba(232,234,240,0.4)", fontSize: "11px" }}>{user?.email}</p>
+                    <span style={styles.roleBadge}>{user?.role}</span>
+                  </div>
+                  <button onClick={() => { navigate("/admin/profile"); setShowProfile(false); }} style={styles.dropBtn}>👤 View / Edit Profile</button>
+                  <button onClick={handleLogout} style={{ ...styles.dropBtn, color: "rgba(239,68,68,0.8)", marginTop: "4px" }}>← Logout</button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </header>
 
       {/* ── Employee Details Modal ── */}
@@ -339,6 +461,19 @@ const styles = {
     backdropFilter: "blur(10px)", display: "flex", alignItems: "center",
     padding: "0 1.5rem", gap: "1rem", zIndex: 40, transition: "left 0.25s ease",
     fontFamily: "'DM Sans', sans-serif",
+  },
+  mobileTopRow: {
+    width: "100%",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: "0.75rem",
+  },
+  mobileActionRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    flexShrink: 0,
   },
   searchInput: {
     background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)",
@@ -380,7 +515,7 @@ const styles = {
   floatCard: {
     position: "absolute", top: "calc(100% + 8px)", right: 0,
     background: "#0e1428", border: "0.5px solid rgba(255,255,255,0.1)",
-    borderRadius: "14px", padding: "1rem", width: "220px", zIndex: 200,
+    borderRadius: "14px", padding: "1rem", width: "220px", maxWidth: "calc(100vw - 2rem)", zIndex: 200,
   },
   floatTitle: { color: "#fff", fontWeight: 600, fontSize: "13px", marginBottom: "0.75rem" },
   floatInput: {
